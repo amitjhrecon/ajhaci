@@ -1,6 +1,6 @@
 template:
-  name: Build and Test with TI (Gradle, parallel)
-  identifier: Build_and_Test_with_TI_Gradle
+  name: testajhatigit
+  identifier: testajhatigit
   versionLabel: v1
   type: Stage
   # Remove projectIdentifier / orgIdentifier for an account-level template,
