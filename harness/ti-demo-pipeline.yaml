@@ -1,8 +1,8 @@
 pipeline:
   name: TI Demo Build
   identifier: TI_Demo_Build
-  projectIdentifier: YOUR_PROJECT
-  orgIdentifier: YOUR_ORG
+  projectIdentifier: ajhaci
+  orgIdentifier: default
   tags: {}
   properties:
     ci:
