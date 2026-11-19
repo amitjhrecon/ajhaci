@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.example.shop'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+
+    // Keep the XML reports where the pipeline's JUnit report path expects them.
+    reports {
+        junitXml.required = true
+    }
+
+    // Optional in-JVM parallelism (separate from Harness test splitting across pods).
+    // Off by default; enable with:  gradle test -PtestForks=2
+    maxParallelForks = (project.findProperty('testForks') ?: '1') as int
+
+    // Forward -Dtest.work.ms=N from the gradle command line to the test JVM.
+    if (System.getProperty('test.work.ms')) {
+        systemProperty 'test.work.ms', System.getProperty('test.work.ms')
+    }
+
+    // Don't hide failures behind the build cache when demoing TI.
+    outputs.upToDateWhen { false }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+}

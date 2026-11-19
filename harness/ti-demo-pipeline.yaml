@@ -1,0 +1,47 @@
+pipeline:
+  name: TI Demo Build
+  identifier: TI_Demo_Build
+  projectIdentifier: YOUR_PROJECT
+  orgIdentifier: YOUR_ORG
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: YOUR_GIT_CONNECTOR   # connector pointing at the sample app repo
+        repoName: ti-demo-app              # omit if the connector is repo-scoped
+        build: <+input>                    # branch / PR / tag chosen at run time or by trigger
+  stages:
+    - stage:
+        name: Build and Test
+        identifier: Build_and_Test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+        template:
+          templateRef: Build_and_Test_with_TI_Gradle
+          versionLabel: v1
+          templateInputs:
+            type: CI
+            spec:
+              execution:
+                steps:
+                  - step:
+                      identifier: compile
+                      type: Run
+                      spec:
+                        image: gradle:8.7-jdk17
+                  - step:
+                      identifier: run_tests_ti
+                      type: RunTests
+                      spec:
+                        image: gradle:8.7-jdk17
+                        runOnlySelectedTests: true
+                      strategy:
+                        parallelism: 3
+                        maxConcurrency: 3
+                  - step:
+                      identifier: package
+                      type: Run
+                      spec:
+                        image: gradle:8.7-jdk17

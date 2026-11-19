@@ -1,0 +1,75 @@
+template:
+  name: Build and Test with TI (Gradle, parallel)
+  identifier: Build_and_Test_with_TI_Gradle
+  versionLabel: v1
+  type: Stage
+  # Remove projectIdentifier / orgIdentifier for an account-level template,
+  # or remove just projectIdentifier for an org-level one.
+  projectIdentifier: <+input>
+  orgIdentifier: <+input>
+  tags: {}
+  spec:
+    type: CI
+    spec:
+      cloneCodebase: true
+      caching:
+        enabled: true          # Cache Intelligence auto-detects Gradle (~/.gradle)
+      platform:
+        os: Linux
+        arch: Amd64
+      runtime:
+        type: Cloud
+        spec: {}
+      execution:
+        steps:
+          - step:
+              type: Run
+              name: Compile
+              identifier: compile
+              spec:
+                connectorRef: account.harnessImage
+                image: <+input>.default(gradle:8.7-jdk17).allowedValues(gradle:8.7-jdk17,gradle:8.7-jdk21)
+                shell: Sh
+                command: gradle --no-daemon -q compileJava compileTestJava
+          - step:
+              type: RunTests
+              name: Run Tests with TI
+              identifier: run_tests_ti
+              spec:
+                connectorRef: account.harnessImage
+                image: <+input>.default(gradle:8.7-jdk17).allowedValues(gradle:8.7-jdk17,gradle:8.7-jdk21)
+                language: Java
+                buildTool: Gradle
+                args: test
+                packages: com.example.shop
+                # true  = only run tests impacted by the change (TI)
+                # false = run everything but still collect call-graph data
+                runOnlySelectedTests: <+input>.default(true).allowedValues(true,false)
+                # Split the (selected) tests across the parallel instances below,
+                # balanced by the class timings recorded on previous runs.
+                enableTestSplitting: true
+                testSplitStrategy: ClassTiming
+                reports:
+                  type: JUnit
+                  spec:
+                    paths:
+                      - "**/build/test-results/test/*.xml"
+              # Each parallel instance runs in its own container and gets 1/N of the tests.
+              strategy:
+                parallelism: <+input>.default(3)
+                maxConcurrency: <+input>.default(3)
+              failureStrategies:
+                - onFailure:
+                    errors:
+                      - AllErrors
+                    action:
+                      type: Abort
+          - step:
+              type: Run
+              name: Package
+              identifier: package
+              spec:
+                connectorRef: account.harnessImage
+                image: <+input>.default(gradle:8.7-jdk17).allowedValues(gradle:8.7-jdk17,gradle:8.7-jdk21)
+                shell: Sh
+                command: gradle --no-daemon -q jar -x test
