@@ -5,8 +5,8 @@ template:
   type: Stage
   # Remove projectIdentifier / orgIdentifier for an account-level template,
   # or remove just projectIdentifier for an org-level one.
-  projectIdentifier: <+input>
-  orgIdentifier: <+input>
+  projectIdentifier: ajhaci
+  orgIdentifier: default
   tags: {}
   spec:
     type: CI
